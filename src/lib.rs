@@ -80,8 +80,13 @@
 extern crate rand;
 #[cfg(feature = "rustc-serialize")]
 extern crate rustc_serialize;
+
 #[cfg(feature = "serde")]
 extern crate serde;
+
+#[cfg(feature = "serde")]
+#[macro_use]
+extern crate serde_derive;
 
 extern crate num_integer as integer;
 extern crate num_traits as traits;

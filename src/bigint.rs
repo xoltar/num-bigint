@@ -39,6 +39,7 @@ mod bigint_tests;
 /// A Sign is a `BigInt`'s composing element.
 #[derive(PartialEq, PartialOrd, Eq, Ord, Copy, Clone, Debug, Hash)]
 #[cfg_attr(feature = "rustc-serialize", derive(RustcEncodable, RustcDecodable))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Sign {
     Minus,
     NoSign,
@@ -72,39 +73,10 @@ impl Mul<Sign> for Sign {
     }
 }
 
-#[cfg(feature = "serde")]
-impl serde::Serialize for Sign {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-        where S: serde::Serializer
-    {
-        match *self {
-            Sign::Minus => (-1i8).serialize(serializer),
-            Sign::NoSign => 0i8.serialize(serializer),
-            Sign::Plus => 1i8.serialize(serializer),
-        }
-    }
-}
-
-#[cfg(feature = "serde")]
-impl serde::Deserialize for Sign {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
-        where D: serde::Deserializer
-    {
-        use serde::de::Error;
-
-        let sign: i8 = try!(serde::Deserialize::deserialize(deserializer));
-        match sign {
-            -1 => Ok(Sign::Minus),
-            0 => Ok(Sign::NoSign),
-            1 => Ok(Sign::Plus),
-            _ => Err(D::Error::invalid_value("sign must be -1, 0, or 1")),
-        }
-    }
-}
-
 /// A big signed integer type.
 #[derive(Clone, Debug, Hash)]
 #[cfg_attr(feature = "rustc-serialize", derive(RustcEncodable, RustcDecodable))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct BigInt {
     sign: Sign,
     data: BigUint,
@@ -1195,28 +1167,6 @@ impl From<BigUint> for BigInt {
                 data: n,
             }
         }
-    }
-}
-
-#[cfg(feature = "serde")]
-impl serde::Serialize for BigInt {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-        where S: serde::Serializer
-    {
-        (self.sign, &self.data).serialize(serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl serde::Deserialize for BigInt {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
-        where D: serde::Deserializer
-    {
-        let (sign, data) = try!(serde::Deserialize::deserialize(deserializer));
-        Ok(BigInt {
-            sign: sign,
-            data: data,
-        })
     }
 }
 
